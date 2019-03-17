@@ -19,7 +19,7 @@ module Hisab
 
     # Disable application initialize on precompile (heroku faq: fixes database access error on precompile)
     config.assets.initialize_on_precompile = false
-
+    config.assets.js_compressor = Uglifier.new(harmony: true)
     # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
     config.assets.precompile += %w(active_admin.css active_admin/print.css active_admin.js )
 
