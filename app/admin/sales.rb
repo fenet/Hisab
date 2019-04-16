@@ -11,7 +11,7 @@ permit_params :customer_name ,:phone_number ,:address ,:include_tax , :created_b
     column "Total Products" do |s|
       s.products.count
     end
-    column "Quantities" do |t|
+    column "Quantity" do |t|
       t.product_items.collect { |oi| oi.quantity}.sum
     end
     column :total_price, as: :currency, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2
@@ -68,12 +68,10 @@ permit_params :customer_name ,:phone_number ,:address ,:include_tax , :created_b
       end
 
 	    def decrement_inventory_quantity
-	     	@sale.products.each do |product|
-	     		product.product_items.each do |item|
-  		     	quantity = product.quantity - item.quantity
-  		     	product.update_columns(quantity: quantity)
-	     		end
-	     	end
+	     	@sale.product_items.each do |item|
+          quantity = item.product.quantity - item.quantity
+          item.product.update_columns(quantity: quantity)
+        end
 	    end
       
       def show_page_title
@@ -88,7 +86,7 @@ permit_params :customer_name ,:phone_number ,:address ,:include_tax , :created_b
         sale.products.limit(4).map { |e| e.product_name }.join(", ")
       end
     end
-    column "Quantities" , sortable: true do |t|
+    column "Quantity" , sortable: true do |t|
       t.product_items.collect { |oi| oi.quantity}.sum
     end
     # list_column :product_items
