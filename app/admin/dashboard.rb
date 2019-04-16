@@ -116,8 +116,8 @@ ActiveAdmin.register_page "Dashboard" do
                   after_tax = (total_sale_with_tax - tax).abs
                   total_sale = total_sale_with_out_tax + after_tax
                   expense = Expense.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day).map{|e| e.price}.sum
-
-                  profit = total_sale - expense
+                  total_unit_price = ProductItem.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day).map{|e| e.product.unit_price * e.quantity}.sum
+                  profit = (total_sale - total_unit_price) - expense
                   status_tag number_to_currency( profit, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "normal"
                 end
               end
@@ -402,7 +402,8 @@ ActiveAdmin.register_page "Dashboard" do
                   total_sale = total_sale_with_out_tax + after_tax
                   expense = Expense.where('created_at >= ?', 1.week.ago).map{|e| e.price}.sum
 
-                  profit = total_sale - expense
+                  total_unit_price = ProductItem.where('created_at >= ?', 1.week.ago).map{|e| e.product.unit_price * e.quantity}.sum
+                  profit = (total_sale - total_unit_price) - expense
                   status_tag number_to_currency( profit, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "normal"
                 end
               end
@@ -688,7 +689,8 @@ ActiveAdmin.register_page "Dashboard" do
                   total_sale = total_sale_with_out_tax + after_tax
                   expense = Expense.where('created_at >= ?', 1.month.ago).map{|e| e.price}.sum
 
-                  profit = total_sale - expense
+                  total_unit_price = ProductItem.where('created_at >= ?', 1.month.ago).map{|e| e.product.unit_price * e.quantity}.sum
+                  profit = (total_sale - total_unit_price) - expense
                   status_tag number_to_currency( profit, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "normal"
                 end
               end
@@ -974,7 +976,8 @@ ActiveAdmin.register_page "Dashboard" do
                   total_sale = total_sale_with_out_tax + after_tax
                   expense = Expense.where('created_at >= ?', 1.year.ago).map{|e| e.price}.sum
 
-                  profit = total_sale - expense
+                  total_unit_price = ProductItem.where('created_at >= ?', 1.week.ago).map{|e| e.product.unit_price * e.quantity}.sum
+                  profit = (total_sale - total_unit_price) - expense
                   status_tag number_to_currency( profit, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "normal"
                 end
               end
