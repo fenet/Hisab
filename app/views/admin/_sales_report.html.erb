@@ -1,0 +1,117 @@
+<% context.instance_eval do
+  columns do
+    column do
+      panel "#{time} Sales Report (Type Of Sales)" do
+        attributes_table_for Sale do
+          row "Down Sales" do |d|
+            status_tag d.where('created_at >= ?', date).where(type_of_sales: "Down Sales").count, class: "down_sales"
+          end
+          row "Credit Sales" do |d|
+            status_tag d.where('created_at >= ?', date).where(type_of_sales: "Credit").count, class: "credit"
+          end
+          row "Normal Sales" do |d|
+            status_tag d.where('created_at >= ?', date).where(type_of_sales: "Normal").count, class: "normal"
+          end
+          row "Total Sales" do |d|
+            # total_sale = d.where('created_at >= ?', date).sum(:total_price)
+            status_tag d.where('created_at >= ?', date).count, class: "total_sale"
+          end
+        end
+      end
+    end
+    column do
+      panel "#{time} Sales Report (Type Of Sales)" do
+        attributes_table_for Sale do
+          row "Down Sales" do |d|
+            total_down_sale = d.where('created_at >= ?', date).where(type_of_sales: "Down Sales").map{|e| e.total_price}.sum
+            status_tag number_to_currency( total_down_sale, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "down_sales"
+          end
+          row "Credit Sales" do |d|
+            total_credit_sale = d.where('created_at >= ?', date).where(type_of_sales: "Credit").map{|e| e.total_price}.sum
+            status_tag number_to_currency( total_credit_sale, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "credit"
+          end
+          row "Normal Sales" do |d|
+            total_normal_sale = Sale.where('created_at >= ?', date).where(type_of_sales: "Normal").map{|e| e.total_price}.sum
+
+            status_tag number_to_currency( total_normal_sale, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "normal"
+          end
+          row "Total Sales" do |d|
+            total_sale = d.where('created_at >= ?', date).map{|e| e.total_price}.sum
+            status_tag number_to_currency( total_sale, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "total_sale"
+          end
+        end
+      end
+    end
+    column do
+      panel "#{time} Sales Report" do
+        attributes_table_for Sale do
+          row "Gross Sales" do |d|
+            total_sale = d.where('created_at >= ?', date).map{|e| e.total_price}.sum
+            status_tag number_to_currency( total_sale, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "total_sale"
+          end
+          row "tax" do |d|
+            tax = d.where('created_at >= ?', date).where(include_tax: true).map{|e|
+              if current_admin_user.tax_type == "VAT"
+                e.total_price * 0.15
+              elsif current_admin_user.tax_type == "TOT"
+                e.total_price * 0.02
+              end
+            }.sum
+            status_tag number_to_currency( tax, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "total_sale"
+          end
+          row "net sales" do |d|
+            total_sale_with_out_tax = d.where('created_at >= ?', date).where(include_tax: false).map{|e| e.total_price}.sum
+            tax = d.where('created_at >= ?', date).where(include_tax: true).map{|e|
+              if current_admin_user.tax_type == "VAT"
+                e.total_price * 0.15
+              elsif current_admin_user.tax_type == "TOT"
+                e.total_price * 0.02
+              end
+            }.sum
+            total_sale_with_tax = d.where('created_at >= ?', date).where(include_tax: true).map{|e| e.total_price}.sum
+            after_tax = (total_sale_with_tax - tax).abs
+            total_sale = total_sale_with_out_tax + after_tax
+            status_tag number_to_currency( total_sale, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "total_sale"
+          end
+          row "Expense" do |d|
+            expense = Expense.where('created_at >= ?', date).map{|e| e.price}.sum
+            status_tag number_to_currency( expense, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "total_sale"
+          end
+          row "Profit" do |d|
+            total_sale_with_out_tax = d.where('created_at >= ?', date).where(include_tax: false).map{|e| e.total_price}.sum
+            tax = d.where('created_at >= ?', date).where(include_tax: true).map{|e|
+              if current_admin_user.tax_type == "VAT"
+                e.total_price * 0.15
+              elsif current_admin_user.tax_type == "TOT"
+                e.total_price * 0.02
+              end
+            }.sum
+            total_sale_with_tax = d.where('created_at >= ?', date).where(include_tax: true).map{|e| e.total_price}.sum
+            after_tax = (total_sale_with_tax - tax).abs
+            total_sale = total_sale_with_out_tax + after_tax
+            expense = Expense.where('created_at >= ?', date).map{|e| e.price}.sum
+
+            total_unit_price = ProductItem.where('created_at >= ?', date).map{|e| e.product.unit_price * e.quantity}.sum
+            profit = (total_sale - total_unit_price) - expense
+            status_tag number_to_currency( profit, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2), class: "normal"
+          end
+        end
+      end
+    end
+  end
+  columns do
+    column do
+      panel "#{time} Sales Report Graph" do
+        product = ProductItem.where("created_at >= ?", date)
+
+        column_chart product.group_by_day_of_week(:created_at, format: "%a").count, download: {filename: "#{Time.now.strftime("%b %d, %Y")}, #{time} Sales Report Graph"}, xtitle: "Time", ytitle: "Product Sold", defer: true ,thousands: ",", messages: {empty: "There Is No Data"}
+      end
+    end
+    column do
+      panel "#{time} Type Of Sales Report Chart" do
+        sale = Sale.where('created_at >= ?', date)
+        pie_chart sale.group(:type_of_sales).count , colors: ["#8daa92", "#e29b20", "#d45f53"] ,download: {filename: "#{Time.now.strftime("%b %d, %Y")}, #{time} Type Of Sales Report Chart"}, donut: true, defer: true, messages: {empty: "There Is No Data"}
+      end
+    end
+  end
+end %>
