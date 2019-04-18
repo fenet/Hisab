@@ -1,0 +1,92 @@
+<% context.instance_eval do
+  columns do
+    column do
+      panel "#{time} Added Users" do
+        if !(AdminUser.where('created_at >= ?', date).count == 0)
+          table_for AdminUser.where('created_at >= ?', date).order("created_at desc").limit(10).each do |_user|
+            column(:full_name)    { |user| link_to(user.full_name, admin_admin_user_path(user)) }
+            column(:role)    { |user| user.role }
+            column(:sign_in_count)    { |user| user.sign_in_count}
+            column("Created At" )   { |user| user.created_at.strftime("%b %d, %Y") }
+          end
+        else
+          h3 class: "text-center no-recent-data" do
+            "NO NEW USER ADDED TODAY"
+          end
+          # actions defaults: true do |foo|
+
+          #   link_to "Add New User", new_admin_admin_user_path(foo)
+
+          # end
+        end
+      end
+    end
+    column do
+      panel "#{time} Added Expense" do
+        if !(Expense.where('created_at >= ?', date).count == 0)
+          table_for Expense.where('created_at >= ?', date).order("created_at desc").limit(10).each do |_expense|
+            column(:expense)    { |expense| link_to(truncate(expense.expense,  :length => 15), admin_expense_path(expense)) }
+            number_column :price, as: :currency, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2
+            column :created_by
+
+            column("Created At" )   { |expense| expense.created_at.strftime("%b %d, %Y") }
+          end
+        else
+          h3 class: "text-center no-recent-data" do
+            "NO NEW EXPENSE ADDED TODAY"
+          end
+        end
+      end
+    end
+  end
+  columns do
+    column do
+      panel "#{time} Added To Stock" do
+        if !(Product.where('created_at >= ?', date).count == 0)
+          table_for Product.where('created_at >= ?', date).order("created_at desc").limit(10) do
+            column "Product Image" do |i|
+              image_tag(i.photo.url(:small_thumbnail)) if i.photo.present?
+            end
+            column("Product Name") { |product| link_to(truncate(product.product_name, :length => 20), admin_product_path(product)) }
+            column(:catagory) { |product| product.catagory}
+            column(:quantity) { |product| product.quantity}
+            column(:unit_price)   { |product| number_to_currency(product.unit_price, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2) }
+            column("Created By" )   { |product| product.created_by }
+            column("Created At" )   { |product| product.created_at.strftime("%b %d, %Y")}
+          end
+        else
+          h3 class: "text-center no-recent-data" do
+            "NO NEW PRODUCT ADDED TO STOCK TODAY"
+          end
+        end
+      end
+    end
+    column do
+      panel "#{time} Sold To Products" do
+        if !(Sale.where('created_at >= ?', date).count == 0)
+          table_for Sale.where('created_at >= ?', date).order("created_at desc").limit(10) do
+            column "Products" do |sale|
+              if !sale.product_ids.nil?
+                sale.products.map { |e| e.product_name }.join(", ")
+              end
+            end 
+            column "Total Products" do |s|
+              s.products.count
+            end
+            column "Quantities" do |t|
+              t.product_items.collect { |oi| oi.quantity}.sum
+            end
+            column :type_of_sales
+            column(:total_price)   { |sale| number_to_currency(sale.total_price, unit: "ETB",  format: "%n %u" ,delimiter: "", precision: 2) }
+            column("Created By" )   { |sale| sale.created_by }
+            column("Created At" )   { |sale| sale.created_at.strftime("%b %d, %Y")}
+          end
+        else
+          h3 class: "text-center no-recent-data" do
+            "NO PRODUCT SOLD TODAY"
+          end
+        end
+      end
+    end
+  end
+end %>
