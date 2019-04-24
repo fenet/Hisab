@@ -43,6 +43,8 @@ gem 'mini_magick', '~> 4.9', '>= 4.9.3'
 gem 'cloudinary', '~> 1.11', '>= 1.11.1'
 gem 'chartkick', '~> 3.0', '>= 3.0.2'
 gem 'groupdate'
+gem 'active_admin_importable'
+gem 'active_admin_filters_visibility', git: 'https://github.com/activeadmin-plugins/active_admin_filters_visibility' 
 # gem 'active_admin_importable'
 # gem "selectize-rails"
 # gem 'activeadmin_selectize'
