@@ -10,7 +10,7 @@ class Ability
         can :manage, ActiveAdmin
         can :manage, AdminUser 
         can :manage, ActiveAdmin::Page, name: "Dashboard", namespace_name: "admin"
-        can :manage, ActiveAdmin::Comment
+        # can :manage, ActiveAdmin::Comment
         can :manage, Product
         can :manage, Catagory
         can :manage, Sale

@@ -1,5 +1,5 @@
 ActiveAdmin.register Sale do
-permit_params :customer_name ,:phone_number ,:address ,:include_tax , :created_by, :type_of_sales ,:total_price, :down_payment, :fully_payed, product_items_attributes: [:id, :product_id, :selling_price,:quantity,:pre_quantity, :_destroy]
+permit_params :customer_name ,:phone_number ,:address ,:include_tax , :created_by, :type_of_sales ,:total_price, :down_payment,:created_at, :fully_payed, product_items_attributes: [:id, :product_id, :selling_price,:quantity,:pre_quantity, :_destroy] 
 
 
   csv do
@@ -135,6 +135,7 @@ permit_params :customer_name ,:phone_number ,:address ,:include_tax , :created_b
       f.input :down_payment
       f.input :fully_payed
       f.input :include_tax
+      f.input :created_at, :as => :date_time_picker
       
     end
     f.has_many :product_items,remote: true , allow_destroy: true, new_record: true do |a|
